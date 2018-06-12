@@ -22,9 +22,14 @@ class LoginForm extends React.Component{
       const errors = this.validate(this.state.data);
       this.setState({errors});
 
-      //check if errors object is empty, Object.keys gets all keys of obj
+      //check if errors object is empty, Object.keys gets all keys of obj. returns a promise
+      //check error from server (from redux state)
       if(Object.keys(errors).length === 0){
-         this.props.submit(this.state.data);
+         //set loading to true and change to false when all done
+         this.setState({ loading: true });
+         this.props
+         .submit(this.state.data)
+         .catch(err => this.setState({ errors: err.response.data.errors, loading: false }));
       }
 
    };
@@ -43,14 +48,20 @@ class LoginForm extends React.Component{
    // need to get the state, validate data, and submit
    render() {
       //const controls the scope of these variables to just this render func
-      const { data , errors } = this.state;
+      const { data , errors, loading } = this.state;
 
       return(
          /*form is part of symantic ui
          error={!!errors.email} is part of semanticui, turns boxes red
 
          */
-         <Form onSubmit={this.onSubmit}>
+         <Form onSubmit={this.onSubmit} loading={loading}>
+            {
+               errors.global && <Message negative>
+               <Message.Header>Something went wrong</Message.Header>
+               <p>{errors.global}</p>
+               </Message>
+            }
             <Form.Field error={!!errors.email}>
                <label htmlFor="email">Email</label>
                <input
